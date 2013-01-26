@@ -1,0 +1,95 @@
+#!/usr/bin/env python3
+# coding=UTF-8
+
+'''
+rpyloader - Load hex programs on your robot
+Copyright (C) 2011 Scirocco <rpyutils@t-online.de>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+'''
+
+"""rpyutils by Maximilian Mühlbauer <rpyutils@t-online.de>"""
+
+import rpyutils.rlib
+import rpyutils.hexlib
+import getopt  # get command line options
+import sys
+import gettext
+from rpyutils.translation import _
+
+def getargs(argv):
+    global port
+    port = "/dev/ttyUSB0"
+    global ignore
+    ignore = False
+    global terminal
+    terminal = False
+    global debuglevel
+    debuglevel = 0
+    global infile
+    infile = ""
+    try:
+        opts, args = getopt.getopt(argv, "htif:d:l:", ["help", "file=", "device=", "terminal", "ignore", "debug-level="])
+    except getopt.GetoptError:
+        print(_("Wrong option."))
+        usage()
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt in ("-h", "--help"):
+            usage()
+            sys.exit()
+        elif opt in ("-d", "--device"):
+            port = arg
+        elif opt in ("-f", "--file"):
+            infile = arg
+        elif opt in ("-t", "--terminal"):  # show terminal after flashing
+            terminal = True
+        elif opt in ("-i", "--ignore"):  # ignore wrong type of binary
+            ignore = True
+        elif opt in ("-l", "--debug-level"):
+            debuglevel = int(arg)
+            
+def usage():
+    print(_("Usage: pyLoader.py -[htif:d:l:] --[help, file, device, terminal, debug-level]"))
+    print(_("-h, --help            show this help dialog"))
+    print(_("-f, --file   [file]   specify a filename"))
+    print(_("-d, --device [device] select other device than /dev/ttyUSB0"))
+    print(_("-i, --ignore          ignore that your program maybe doesn't suit the connected your robot device"))
+    print(_("-t, --terminal        show rpyTerm at the end of the flash process"))
+    print(_("-l, --debug-level     change debug level to show more / less"))
+
+getargs(sys.argv[1:])
+
+if infile[len(infile) - 3:] != "hex":
+    if debuglevel >= 1:
+        print(_("searching for *.hex files in current directory..."))
+    infile = rpyutils.hexlib.HexToBin.findHexFile()
+    if infile == False:
+        usage()
+        sys.exit(2)
+progtype = rpyutils.rlib.Robby.getFileClass(infile)
+
+# hexlib class; parse hex file
+hexlib = rpyutils.hexlib.HexToBin(infile, debuglevel)
+
+rp6 = rpyutils.rlib.Robby(port, debuglevel)
+rp6.connect()
+rp6.reset()
+robottype = rp6.getType(True)
+if robottype != progtype and ignore != True:
+    print(_("File for wrong board given. Ignore this with -i"))
+    sys.exit(2)
+rp6.setHighSpeed()
+rp6.getType()
+rp6.flash(hexlib.getBinData())

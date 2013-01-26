@@ -1,0 +1,321 @@
+#!/usr/bin/env python3
+# coding=UTF-8
+
+'''
+rpyterm - Control your RP6 robot
+Copyright (C) 2011 Scirocco <rpyutils@t-online.de>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+'''
+
+"""rpyutils by Maximilian Mühlbauer <rpyutils@t-online.de>"""
+
+import serial
+import sys
+import os
+import getopt
+import fcntl
+import time
+import curses
+import signal
+import gettext
+import readline
+from rpyutils.translation import _
+
+def quit(signum, frame): #Strg+C abfangen. Ideen, wie man curses beenden kann?
+    pass
+
+signal.signal(signal.SIGINT, quit)#signal "connecten"
+
+VERSION = "0.1"
+
+print(_("Robby pyTerm version ")+VERSION) #immer version ausgeben
+print("")
+print("rpyutils Copyright (C) 2011 Scirocco <rpyutils@t-online.de>")
+print("This program comes with ABSOLUTELY NO WARRANTY; for details please visit http://www.gnu.org/licenses/gpl.html")
+print("This is free software, and you are welcome to redistribute it under certain conditions; visit http://www.gnu.org/licenses/gpl.html for details.")
+print("")
+
+def getargs(argv): #funktion, um parameter auszulesen
+    global port #port ist global
+    port = "/dev/ttyUSB0" #standard-port
+    try: #optionen versuchen
+        opts, args = getopt.getopt(argv, "d:", ["device="]) #optionen auslesen
+    except getopt.GetoptError: #falsche option?
+        print("Wrong option.")
+    for opt, arg in opts: #wenn optionen
+        if opt in ("-d", "--device"): #device
+            print(arg)
+            port = arg #port auf device setzen
+
+getargs(sys.argv[1:])#1.arg (rpyTerm.py) nicht
+
+
+# make stdin a non-blocking file
+fd = sys.stdin.fileno()
+fl = fcntl.fcntl(fd, fcntl.F_GETFL)
+fcntl.fcntl(fd, fcntl.F_SETFL, fl |os.O_NONBLOCK)
+pipe_name = '/tmp/pypipe' #pipe zwischen robby auslesen und prog
+
+def robbytopipe():
+    pipeout = os.open(pipe_name, os.O_WRONLY)#pipe öffnen
+    try: #Port öffnen
+        ser = serial.Serial(
+         port=port, #Port
+         baudrate=38400, #baud
+         timeout=1, #timeout
+         parity=serial.PARITY_NONE, #keine Parität
+         stopbits=serial.STOPBITS_ONE, #ein stopbit
+         bytesize=serial.EIGHTBITS #acht bits
+        )
+    except: #Port existiert nicht
+        print(port+_(": No such a device."))
+        exit(2)
+
+    time.sleep(0.5)#reset
+    ser.setRTS(0) #rts aus
+    while True:
+        s = ser.read(1)#char von robby lesen &
+        os.write(pipeout, s)#ueber pipe weiterleiten
+
+def termtorobby(pid):
+    histfile = "rpyTermhistory" #history fuer session in datei speichern
+    rpyUtilsdir = ".rpyUtils"#verstecktes verzeichnis
+
+    histpath = os.environ['HOME']+ os.sep +rpyUtilsdir + os.sep + histfile #linux: ~/.rpyUtils/rpyTermhistory
+    if not os.path.exists(os.environ['HOME']+ os.sep+rpyUtilsdir): #verzeichnis existiert nicht?
+        os.mkdir(os.environ['HOME']+ os.sep+rpyUtilsdir)#anlegen
+    if not os.path.isfile(histpath):
+        f = open(histpath, "a")
+        f.close()
+    histcounter = 0
+    hist = open(histpath, "r")
+    for line in hist:
+        histcounter = histcounter + 1
+    hist.close()
+    readline.read_history_file(histpath)
+    ser = serial.Serial(#serial port zu robby oeffnen
+    port=port, #Port
+    baudrate=38400, #baud
+    timeout=1, #timeout
+    parity=serial.PARITY_NONE, #keine
+    stopbits=serial.STOPBITS_ONE, #ein stopbit
+    bytesize=serial.EIGHTBITS #acht bits
+    )
+    ser.setRTS(0) #rts aus
+
+    time.sleep(0.2) #anderem prog zeit lassen
+    pipein = open(pipe_name, "r")#pipe oeffnen
+    fl = fcntl.fcntl(pipein, fcntl.F_GETFL)#pipein
+    fcntl.fcntl(pipein, fcntl.F_SETFL, fl |os.O_NONBLOCK)#nonblocking machen
+
+    stdscr = curses.initscr()#start
+    curses.noecho()# Keine Anzeige gedrückter Tasten
+    curses.cbreak()# Kein line-buffer -> kann eingreifen
+    stdscr.keypad(1)# Escape-Sequenzen aktivieren
+
+    # Farben
+    curses.start_color()
+    curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLUE)
+    curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_WHITE)
+    curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_WHITE)
+
+    # Fenster und Hintergrundfarben
+    stdscr.bkgd(curses.color_pair(1))
+    stdscr.refresh()
+
+    termy, termx = stdscr.getmaxyx() #groesse von terminalfenster ermitteln
+
+    win = curses.newwin((termy-4), termx, 0, 0)#groesse: max. breite, unten 4 uebrig lassen
+    win.bkgd(curses.color_pair(2))
+    win.box()
+    win.refresh()
+
+    win2 = curses.newwin(4, termx, (termy-4), 0)#groesse: max. breite, vier unterste zeilen
+    win2.box()
+    win2.bkgd(curses.color_pair(3))
+    win2.keypad(1) #fuer key_up etc
+
+    win.refresh()
+    win2.timeout(0)#non-blocking lesen: keine daten -> -1
+    win2.refresh()
+    win2.addstr(1, 2, _("Please Enter your command (help for a list of built-in commands): "))
+    win2.addstr(2, 2, "")
+    win2.refresh()
+    pad_height = 10000
+    pad = curses.newpad(pad_height, 1000)#pad fuer term
+    maxy, maxx = win.getmaxyx()#groesse von win1 ermitteln
+
+    # Wir merken uns, wo wir sind -> scrollen
+    line_start = 1
+    col_start = 1
+
+    i=2 #pad bei 2.Zeile anfangen
+    zeile = ">> " #von robby : >> am anfang, z.B.( >> [RP6BOOT] )
+    line = "" #von tastatur: leerer string
+    pad.addstr(1, 2, _("Robby pyTerm version ")+str(VERSION)) #begruessung
+    pad.refresh(line_start, col_start, 1, 1, maxy-2, maxx-2) #pad updaten
+    exit = 0 #bei 1 exit
+    cur_histcounter = histcounter
+    while True and exit == 0:
+        try:
+            read = pipein.read(1)#IOError wenn keine Daten
+            zeile += read#Byte dem String anfügen
+            if read == "\n":#EOL
+                pad.addstr(i, 2, zeile)#aufs pad schreiben
+                line_start = i-maxy+4
+                pad.refresh(line_start, col_start, 1, 1, maxy-2, maxx-2)#pad, wenn noetig, verschieben
+                i=i+1
+                zeile = ">> "#zeile leeren
+        except IOError:
+            pass #nop()
+        if i > pad_height -2:
+            pad.erase()
+            i = 0
+        char = win2.getch() #user-input einlesen
+        if char != -1: #char wartet!
+            if char == curses.KEY_BACKSPACE: #127:#loeschtaste
+                win2.delch()#char loeschen
+                line = line[0:(len(line)-1)]#von line letzten char loeschen
+                win2.clear()
+                win2.box()
+                win2.addstr(1, 2, _("Please Enter your command (help for a list of built-in commands): "))
+                win2.addstr(2, 2, line)
+                win2.refresh() #refreshen
+            elif char == curses.KEY_UP:
+                cur_histcounter = cur_histcounter - 1
+                win2.clear()
+                win2.box()
+                win2.addstr(1, 2, _("Please Enter your command (help for a list of built-in commands): "))
+                line = readline.get_history_item(cur_histcounter)
+                #print(cur_histcounter)
+                if(line == None):
+                    curses.beep()
+                    line = ""
+                    cur_histcounter = cur_histcounter + 1
+                win2.addstr(2, 2, line)
+                win2.refresh() #refreshen
+            elif char == curses.KEY_DOWN:
+                cur_histcounter = cur_histcounter + 1
+                win2.clear()
+                win2.box()
+                win2.addstr(1, 2, _("Please Enter your command (help for a list of built-in commands): "))
+                line = readline.get_history_item(cur_histcounter)
+                #print(cur_histcounter)
+                if(line == None):
+                    curses.beep()
+                    line = ""
+                    cur_histcounter = cur_histcounter - 1
+                win2.addstr(2, 2, line)
+                win2.refresh() #refreshen
+            elif char == curses.KEY_NPAGE: #bild auf
+                try:
+                    page += 1
+                except NameError:
+                    page = i-maxy+4
+                    page += 1
+                line_start = page
+                if line_start > i-maxy+4:
+                    line_start = i-maxy+4
+                    curses.beep()
+                pad.refresh(line_start, col_start, 1, 1, maxy-2, maxx-2)
+            elif char == curses.KEY_PPAGE: #bild ab
+                try:
+                    page -= 1
+                except NameError:
+                    page = i-maxy+4
+                    page -= 1
+                line_start = page
+                if line_start < 0:
+                    line_start = 0
+                    curses.beep()
+                pad.refresh(line_start, col_start, 1, 1, maxy-2, maxx-2)
+            elif char == curses.KEY_END:
+                del page
+                line_start = i-maxy+4
+                pad.refresh(line_start, col_start, 1, 1, maxy-2, maxx-2)
+            elif char == 10: #enter
+                histcounter = histcounter +1
+                cur_histcounter = histcounter
+                readline.add_history(line)
+                if(line == "help"):#hilfe ausgeben
+                    pad.addstr(i, 2, _("+--------------------------------------------------+"))
+                    i= i+1
+                    pad.addstr(i, 2, _("|                    pyTerm help                   |"))
+                    i= i+1
+                    pad.addstr(i, 2, _("|                 Built-in Commands:               |"))
+                    i= i+1
+                    pad.addstr(i, 2, _("|                 exit: Exit pyTerm                |"))
+                    i= i+1
+                    pad.addstr(i, 2, _("|                 reset: Reset RP6                 |"))
+                    i= i+1
+                    pad.addstr(i, 2, _("|            start: Start Program on RP6           |"))
+                    i= i+1
+                    pad.addstr(i, 2, _("|                       Keys:                      |"))
+                    i= i+1
+                    pad.addstr(i, 2, _("|             PageUp: Scroll up in Term            |"))
+                    i= i+1
+                    pad.addstr(i, 2, _("|           PageDown: Scroll down in Term          |"))
+                    i= i+1
+                    pad.addstr(i, 2, _("|                End: stop scrolling               |"))
+                    i= i+1
+                    pad.addstr(i, 2, _("+--------------------------------------------------+"))
+                elif line == "exit": #ende
+                    exit = 1 #endlosschleife verlassen
+                    os.kill(pid, signal.SIGTERM) #child (robbytopipe) killen
+                elif line == "reset": #robby-reset
+                    ser.setRTS(1) #rts ein
+                    time.sleep(0.1) #kurz warten
+                    ser.setRTS(0) #rts aus
+                elif line == "start":
+                    try:
+                        ser.write(bytes('s', encoding='ascii'))#
+                        ser.write(bytes("\x0A", encoding='ascii'))
+                    except:#python 2.6 fallback
+                        ser.write('s')
+                        ser.write("\x0A")
+                else:
+                    pad.addstr(i, 2, "# "+line) #befehl auf pad schreiben
+                    try:
+                        ser.write(bytes(line, encoding='ascii'))#
+                        ser.write(bytes("\x0A", encoding='ascii'))
+                    except:#python 2.6 fallback
+                        ser.write(line)
+                        ser.write("\x0A")
+                line_start = i-maxy+4
+                pad.refresh(line_start, col_start, 1, 1, maxy-2, maxx-2)
+                i = i+1
+                win2.clear()
+                win2.box()
+                win2.addstr(1, 2, _("Please Enter your command (help for a list of built-in commands): "))
+                win2.addstr(2, 2, "")
+                win2.refresh()
+                line = ""
+            elif char > 31 and char < 127:
+                win2.addch(char)
+                line += chr(char)
+            win2.refresh()
+    curses.nocbreak()
+    stdscr.keypad(0)
+    curses.echo()
+    curses.endwin()
+    readline.write_history_file(histpath)
+
+if not os.path.exists(pipe_name):
+    os.mkfifo(pipe_name)
+pid = os.fork()
+if pid != 0:
+    termtorobby(pid)
+else:
+    robbytopipe()

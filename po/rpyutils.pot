@@ -1,0 +1,181 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2013-01-24 17:34+CET\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: ENCODING\n"
+"Generated-By: pygettext.py 1.5\n"
+
+
+#: rpyloader:45
+msgid "Wrong option."
+msgstr ""
+
+#: rpyloader:64
+msgid "Usage: pyLoader.py -[htif:d:l:] --[help, file, device, terminal, debug-level]"
+msgstr ""
+
+#: rpyloader:65
+msgid "-h, --help            show this help dialog"
+msgstr ""
+
+#: rpyloader:66
+msgid "-f, --file   [file]   specify a filename"
+msgstr ""
+
+#: rpyloader:67
+msgid "-d, --device [device] select other device than /dev/ttyUSB0"
+msgstr ""
+
+#: rpyloader:68
+msgid "-i, --ignore          ignore that your program maybe doesn't suit the connected your robot device"
+msgstr ""
+
+#: rpyloader:69
+msgid "-t, --terminal        show rpyTerm at the end of the flash process"
+msgstr ""
+
+#: rpyloader:70
+msgid "-l, --debug-level     change debug level to show more / less"
+msgstr ""
+
+#: rpyloader:76
+msgid "searching for *.hex files in current directory..."
+msgstr ""
+
+#: rpyloader:91
+msgid "File for wrong board given. Ignore this with -i"
+msgstr ""
+
+#: rpyterm:41 rpyterm:165
+msgid "Robby pyTerm version "
+msgstr ""
+
+#: rpyterm:81
+msgid ": No such a device."
+msgstr ""
+
+#: rpyterm:151 rpyterm:191 rpyterm:198 rpyterm:211 rpyterm:299
+msgid "Please Enter your command (help for a list of built-in commands): "
+msgstr ""
+
+#: rpyterm:251 rpyterm:271
+msgid "+--------------------------------------------------+"
+msgstr ""
+
+#: rpyterm:253
+msgid "|                    pyTerm help                   |"
+msgstr ""
+
+#: rpyterm:255
+msgid "|                 Built-in Commands:               |"
+msgstr ""
+
+#: rpyterm:257
+msgid "|                 exit: Exit pyTerm                |"
+msgstr ""
+
+#: rpyterm:259
+msgid "|                 reset: Reset RP6                 |"
+msgstr ""
+
+#: rpyterm:261
+msgid "|            start: Start Program on RP6           |"
+msgstr ""
+
+#: rpyterm:263
+msgid "|                       Keys:                      |"
+msgstr ""
+
+#: rpyterm:265
+msgid "|             PageUp: Scroll up in Term            |"
+msgstr ""
+
+#: rpyterm:267
+msgid "|           PageDown: Scroll down in Term          |"
+msgstr ""
+
+#: rpyterm:269
+msgid "|                End: stop scrolling               |"
+msgstr ""
+
+#: rpyutils/hexlib.py:35
+msgid "Parsing Hexfile: %s"
+msgstr ""
+
+#: rpyutils/hexlib.py:46
+msgid "Incorrect Checksum at line %i"
+msgstr ""
+
+#: rpyutils/rlib.py:37
+msgid "OUT: "
+msgstr ""
+
+#: rpyutils/rlib.py:44
+msgid "IN: "
+msgstr ""
+
+#: rpyutils/rlib.py:51
+msgid "Connecting to %s"
+msgstr ""
+
+#: rpyutils/rlib.py:62
+msgid "Resetting Robot"
+msgstr ""
+
+#: rpyutils/rlib.py:76
+msgid "Could not reset Robot %s"
+msgstr ""
+
+#: rpyutils/rlib.py:89
+msgid "RP6-Board connected"
+msgstr ""
+
+#: rpyutils/rlib.py:95
+msgid "M32-Board connected"
+msgstr ""
+
+#: rpyutils/rlib.py:98
+msgid "Could not determinate the type of the Robot"
+msgstr ""
+
+#: rpyutils/rlib.py:105
+msgid "Voltage: %s V"
+msgstr ""
+
+#: rpyutils/rlib.py:117
+msgid "Highspeed enabled"
+msgstr ""
+
+#: rpyutils/rlib.py:120
+msgid "Could not setup high speed connection"
+msgstr ""
+
+#: rpyutils/rlib.py:123
+msgid "Initializing flash"
+msgstr ""
+
+#: rpyutils/rlib.py:136
+msgid "Flashing"
+msgstr ""
+
+#: rpyutils/rlib.py:139
+msgid "Flashing block: %i"
+msgstr ""
+
+#: rpyutils/rlib.py:153
+msgid "Error flashing Block %i"
+msgstr ""
+
+#: rpyutils/rlib.py:156
+msgid "Flashing finished"
+msgstr ""
+
