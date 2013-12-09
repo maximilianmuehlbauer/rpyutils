@@ -61,7 +61,7 @@ class HexToBin(object):
         if len(hexfiles) > 1 or len(hexfiles) == 0:
             return False
         else:
-            return hex[0]
+            return hexfiles[0]
             
 class HexError(Exception):
     def __init__(self, value):
