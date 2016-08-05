@@ -4,6 +4,7 @@
 '''
 rpyloader - Load hex programs on your robot
 Copyright (C) 2011 Scirocco <rpyutils@t-online.de>
+Copyright (C) 2016 Benedikt Wildenhain <rpyutils@benedikt-wildenhain.de>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -61,7 +62,7 @@ def getargs(argv):
             debuglevel = int(arg)
             
 def usage():
-    print(_("Usage: pyLoader.py -[htif:d:l:] --[help, file, device, terminal, debug-level]"))
+    print(_("Usage: %(myName)s -[htif:d:l:] --[help, file, device, terminal, debug-level]") % { 'myName': __file__ })
     print(_("-h, --help            show this help dialog"))
     print(_("-f, --file   [file]   specify a filename"))
     print(_("-d, --device [device] select other device than /dev/ttyUSB0"))

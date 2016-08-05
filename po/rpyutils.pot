@@ -20,7 +20,7 @@ msgid "Wrong option."
 msgstr ""
 
 #: rpyloader:64
-msgid "Usage: pyLoader.py -[htif:d:l:] --[help, file, device, terminal, debug-level]"
+msgid "Usage: %(myName)s -[htif:d:l:] --[help, file, device, terminal, debug-level]"
 msgstr ""
 
 #: rpyloader:65
