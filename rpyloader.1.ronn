@@ -1,0 +1,33 @@
+rpyutils(1) Flash and control your RP6 robot
+=============================================
+
+## SYNOPSIS
+
+`rpyloader` [options] [hexfile]
+
+## DESCRIPTION
+
+The Robby pyLoader allows to reprogram Arexx' RP6 Robot with compiled
+code.
+
+Flashes the robot with the compiled code in `hexfile`, if given,
+otherwise scans current directory for a single file named `*.hex` and
+flashes that onto the robot.
+
+- `-h`, `--help`	    show the help dialog
+- `-f`, `--file FILE`	    specify a filename
+- `-d`, `--device DEVICE`   select other device than /dev/ttyUSB0
+- `-i`, `--ignore`	    ignore that your program maybe doesn't suit the connected your robot device
+- `-t`, `--terminal`	    show rpyterm(1) at the end of the flash process
+- `-l`, `--debug-level`	    change debug level to show more / less
+
+    
+## SECURITY CONSIDERATIONS
+
+rpyloader needs read and write access to serial device DEVICE. If you
+want to avoid to run rpyloader as root, you should give users allowed to
+control the robot access to DEVICE.
+
+## SEE ALSO
+
+rpyterm(1)
