@@ -1,0 +1,31 @@
+rpyutils(1) Flash and control your RP6 robot
+=============================================
+
+## SYNOPSIS
+
+`rpyterm` [-d DEVICE]
+
+## DESCRIPTION
+
+Allows to interactively control programs running on Arexx' RP6 robot
+and exchange data with them.
+
+  * `-d DEVICE` select other device than /dev/ttyUSB0
+
+## OPTIONS
+## SYNTAX
+## ENVIRONMENT
+## RETURN VALUES
+## STANDARDS
+## SECURITY CONSIDERATIONS
+rpyloader needs read and write access to serial device DEVICE. If you
+want to avoid to run rpyloader as root, you should give users allowed to
+control the robot access to DEVICE.
+
+## BUGS
+## HISTORY
+## AUTHOR
+## COPYRIGHT
+## SEE ALSO
+
+rpyloader(1)
